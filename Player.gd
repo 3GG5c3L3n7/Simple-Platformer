@@ -1,10 +1,9 @@
 extends KinematicBody2D
 
 var velocity = Vector2.ZERO
-
+var fast_fall = false
 
 func _physics_process(delta):
-	#gravity
 	apply_gravity()
 	var input = Vector2.ZERO
 	input.x = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
@@ -13,19 +12,27 @@ func _physics_process(delta):
 		apply_friction()
 	else:
 		apply_acceleration(input.x)
-	#player movement
 
-	#player jump
-	if Input.is_action_just_pressed("ui_up"):
-		velocity.y = -140
+	if is_on_floor():
+		fast_fall = false
+		if Input.is_action_just_pressed("ui_up"):
+			velocity.y = -130
+	else:
+		if Input.is_action_just_released("ui_up") and velocity.y < -70:
+			velocity.y = -70
 		
-	velocity = move_and_slide(velocity)
+		if velocity.y > 0 and not fast_fall:
+			velocity.y+=25
+			fast_fall = true
+			
+		
+	velocity = move_and_slide(velocity, Vector2.UP)
 	
 func apply_gravity():
 	velocity.y +=4
 	
 func apply_friction():
-	velocity.x = move_toward(velocity.x, 0, 2)
+	velocity.x = move_toward(velocity.x, 0, 10)
 
 func apply_acceleration(amount):
-	velocity.x = move_toward(velocity.x, 50 * amount, 20)
+	velocity.x = move_toward(velocity.x, 50 * amount, 10)
